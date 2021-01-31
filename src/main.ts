@@ -12,11 +12,12 @@ async function bootstrap() {
         exceptionFactory: (errors: ValidationError[]) => {
             const errorMessages = {};
             errors.forEach(error => {
-                errorMessages[error.property] = (Object.values(error.constraints)).sort();
+                errorMessages[error.property] = (Object.values(error.constraints)).sort()[0];
             });
             throw new BadRequestException(errorMessages);
         },
-        stopAtFirstError: true
+        stopAtFirstError: true,
+        whitelist: true
     }));
   await app.listen(3000);
 }

@@ -13,7 +13,6 @@ export class CreateUserDto{
 
     role: string = 'normal_user';
     
-    @IsString()
     token: string;
 }
 
