@@ -17,10 +17,12 @@ export class UserService {
         );
         if (user && user.email) throw new BadRequestException({ email: 'email already used' });
         body.password = await hash(body.password, 10);
-        let newUser = await (await this.db.collection('users').insertOne(body)).ops[0];
-        return {
-            ...newUser,
-            password: undefined
-        }
+        let newUser = await (await this.db.collection('users').insertOne({
+            ...body,
+            role: 'user',
+        })).ops[0];
+        delete newUser.password;
+        delete newUser.role;
+        return newUser;
     }
 }

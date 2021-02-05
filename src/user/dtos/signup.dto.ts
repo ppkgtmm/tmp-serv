@@ -8,8 +8,6 @@ export class SignUpDto{
     @MinLength(8, { message: 'password should be at least 8 characters long' })
     @IsNotEmpty({ message: 'password is required' })
     password: string;
-
-    role: string = 'normal_user';
     
     token: string;
 }
