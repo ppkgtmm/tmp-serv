@@ -1,0 +1,1 @@
+export { removeProps } from './object';

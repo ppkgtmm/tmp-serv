@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Db } from 'mongodb';
 import { hash, compare } from 'bcrypt';
 import { SignUpDto } from '../user/dtos/signup.dto';
+import { removeProps } from '../utils';
 
 @Injectable()
 export class UserService {
@@ -21,8 +22,6 @@ export class UserService {
             ...body,
             role: 'user',
         })).ops[0];
-        delete newUser.password;
-        delete newUser.role;
-        return newUser;
+        return removeProps(newUser, ['role', 'password']);
     }
 }
