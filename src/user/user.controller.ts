@@ -6,12 +6,10 @@ import { SignUpDto, LoginDto } from './dtos';
 export class UserController {
     constructor(private userService: UserService) {}
     @Post('signup')
-    // @UsePipes(new ValidationPipe({ transform: true }))
-    signup(@Body() signUpDto: SignUpDto): object{
-        return {};
+    async signup(@Body() signUpDto: SignUpDto): Promise<object>{
+       return await this.userService.signup(signUpDto);
     }
     @Post('login')
-    // @UsePipes(new ValidationPipe({ transform: true }))
     login(@Body() loginDto: LoginDto): object{
         return {};
     }
