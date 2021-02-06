@@ -1,27 +1,30 @@
 import {
     BadRequestException,
+    forwardRef,
     Inject,
     Injectable,
     UnauthorizedException
-} from '@nestjs/common';
+} from '@nestjs/common'; 
 import { Db } from 'mongodb';
 import { compare, hash } from 'bcrypt';
-import { CreateUserDto, LoginDto, User as UserDto } from '../user/dtos';
-import { convertToResponse } from '../common/formatter';
-import { User } from '../common/dtos/user.dto';
+import { CreateUserDto, LoginDto } from '../shared/dtos';
+import { User, Payload } from '../shared/types';
 
 @Injectable()
 export class UserService {
     constructor(
-        @Inject('DATABASE_CONNECTION')
-        private db: Db,
+        @Inject('DATABASE_CONNECTION') private db: Db,
     ) { }
 
     async findOne(email: string): Promise<User>{
         return await this.db.collection('users').findOne({ email });
     }
 
-    async createUser(body: CreateUserDto): Promise<UserDto> {
+    async findByPayload(payload: Payload): Promise<User> {
+        const { email, role } = payload;
+        return await this.db.collection('users').findOne({ email, role });
+    }
+    async createUser(body: CreateUserDto): Promise<User> {
         let user: User = await this.findOne(body.email);
         if (user && user.email)
             throw new BadRequestException({ email: 'email already used' });
@@ -31,8 +34,8 @@ export class UserService {
             password: await hash(body.password, 10),
             role: 'user',
         })).ops[0];
-        
-        return convertToResponse(newUser);
+
+        return newUser;
     }
 
     async login(body: LoginDto): Promise<User>{

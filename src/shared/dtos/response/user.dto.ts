@@ -17,5 +17,5 @@ export class User {
 
     @IsString()
     @IsOptional()
-    token?: string;
+    access_token?: string;
 }
