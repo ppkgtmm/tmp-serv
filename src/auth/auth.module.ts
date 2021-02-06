@@ -1,23 +1,22 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './jwt.strategy';
-import { DatabaseModule } from 'src/database/database.module';
-import { UserModule } from 'src/user/user.module';
+import { JwtStrategy } from './jwt/jwt.strategy';
+import { UserService } from 'src/user/user.service';
+import { AuthController } from './auth.controller';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    forwardRef(() => UserModule),
-    PassportModule,
-    
-    DatabaseModule,
+    ConfigModule.forRoot({
+      envFilePath: '.dev.env',
+    }),
     JwtModule.register({
-      secret: process.env.PRIVATE_KEY,
-      signOptions: { expiresIn: '7d' },
+        secret: process.env.PRIVATE_KEY,
+        signOptions: { expiresIn: '7d' },
     }),
   ],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService]
+  providers: [AuthService, JwtStrategy, UserService],
+  controllers: [AuthController]
 })
 export class AuthModule {}

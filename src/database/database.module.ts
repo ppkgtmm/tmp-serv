@@ -1,24 +1,10 @@
-import { InternalServerErrorException, Module } from '@nestjs/common';
-import { MongoClient, Db } from 'mongodb';
+import { Global, Module } from '@nestjs/common';
+import { databaseProviders } from './database.provider';
 
+@Global()
 @Module({
-    providers: [
-        {
-          provide: 'DATABASE_CONNECTION',
-          useFactory: async (): Promise<Db> => {
-                try {
-                    const client = await MongoClient.connect(process.env.MONGO_URI, {
-                        useUnifiedTopology: true
-                    });
-                    return client.db('shop');
-                } catch (e) {
-                    console.log(e);
-                    throw new InternalServerErrorException;
-                }
-            }
-        },
-    ],
-      exports: ['DATABASE_CONNECTION'],
+    providers: [...databaseProviders],
+    exports: [...databaseProviders],
 })
 export class DatabaseModule { }
 
