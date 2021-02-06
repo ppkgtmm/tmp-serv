@@ -1,8 +1,14 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    Inject,
+    Injectable,
+    UnauthorizedException
+} from '@nestjs/common';
 import { Db } from 'mongodb';
-import { hash, compare } from 'bcrypt';
-import { SignUpDto } from '../user/dtos/signup.dto';
-import { removeProps } from '../utils';
+import { compare, hash } from 'bcrypt';
+import { CreateUserDto, LoginDto, User as UserDto } from '../user/dtos';
+import { convertToResponse } from '../common/formatter';
+import { User } from '../common/dtos/user.dto';
 
 @Injectable()
 export class UserService {
@@ -10,18 +16,30 @@ export class UserService {
         @Inject('DATABASE_CONNECTION')
         private db: Db,
     ) { }
-    
-    async signup(body: SignUpDto): Promise<object>{
-        let user = await this.db.collection('users').findOne(
-            { email: body.email },
-            { projection: { email: 1 } }
-        );
-        if (user && user.email) throw new BadRequestException({ email: 'email already used' });
-        body.password = await hash(body.password, 10);
+
+    async findOne(email: string): Promise<User>{
+        return await this.db.collection('users').findOne({ email });
+    }
+
+    async createUser(body: CreateUserDto): Promise<UserDto> {
+        let user: User = await this.findOne(body.email);
+        if (user && user.email)
+            throw new BadRequestException({ email: 'email already used' });
+        
         let newUser = await (await this.db.collection('users').insertOne({
             ...body,
+            password: await hash(body.password, 10),
             role: 'user',
         })).ops[0];
-        return removeProps(newUser, ['role', 'password']);
+        
+        return convertToResponse(newUser);
+    }
+
+    async login(body: LoginDto): Promise<User>{
+        const user = await this.findOne(body.email);
+        if (user && (await compare(body.password, user.password))) {
+            return user
+        } 
+        throw new UnauthorizedException('invalid email or password');       
     }
 }

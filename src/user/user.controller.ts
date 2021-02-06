@@ -1,17 +1,22 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { SignUpDto, LoginDto } from './dtos';
+import { CreateUserDto, LoginDto } from './dtos';
+import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from 'src/auth/auth.service';
 
 @Controller('user')
 export class UserController {
-    constructor(private userService: UserService) {}
+    constructor(
+        private userService: UserService,
+        private readonly authService: AuthService
+    ) { }
+    
     @Post('signup')
-    async signup(@Body() signUpDto: SignUpDto): Promise<object>{
-       return await this.userService.signup(signUpDto);
+    async signup(@Body() createUserDto: CreateUserDto): Promise<object>{
+       return await this.userService.createUser(createUserDto);
     }
     @Post('login')
-    login(@Body() loginDto: LoginDto): object{
-        return {};
+    async login(@Body() loginDto :  LoginDto) {
+        return this.authService.login(loginDto);
     }
-
 }
